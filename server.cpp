@@ -10,6 +10,8 @@
 #include <netdb.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string>
+#include <iostream>
 
 typedef struct {
     unsigned short port;
@@ -56,41 +58,32 @@ int main(int argc, char **argv) {
         return -1;
     }
     server svr = initServer(run_port);
-    fd_set master_set, working_set;
 
-    FD_ZERO(&master_set);
-    FD_SET(svr.listen_fd, &master_set);
     int conn_fd;
     int pid_list[4096], fork_num = 0;
 
     struct sockaddr_in cliaddr;
     unsigned long len = sizeof(cliaddr);
     while (1) {
-        memcpy(&working_set, &master_set, sizeof(master_set));
-        if(select(4, &working_set, NULL, NULL, NULL) == -1){
-            perror("select");
-            exit(4);
-        }
-        if (FD_ISSET(svr.listen_fd, &working_set)) {
-            conn_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);
-            fprintf(stderr, "new connection %d\n", conn_fd);
-            while (conn_fd < 0) {
-                if (errno == EINTR || errno == EAGAIN) conn_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);  // try again
-                if (errno == ENFILE) {
-                    (void) fprintf(stderr, "out of file descriptor table ...\n");
-                    continue;
-                }
-                perror("accept");
+        conn_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);
+        fprintf(stderr, "new connection %d\n", conn_fd);
+        while (conn_fd < 0) {
+            if (errno == EINTR || errno == EAGAIN) conn_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);  // try again
+            if (errno == ENFILE) {
+                (void) fprintf(stderr, "out of file descriptor table ...\n");
+                continue;
             }
-            FD_SET(conn_fd, &working_set);
-            if ((pid_list[fork_num++] = fork()) == 0) {
-                char request[4096];
-                while (1) {
-                    read(conn_fd, request, 4096);
-                    write(conn_fd, request, strlen(request));
-                }
-            }
+            perror("accept");
         }
+        if ((pid_list[fork_num++] = fork()) == 0) {
+            // dup2(conn_fd, STDOUT_FILENO);
+            // dup2(conn_fd, STDIN_FILENO);
+            char request[4096];
+            read(conn_fd, request, 4096);
+            write(conn_fd, request, 4096);
+            exit(0);
+        }
+        close(conn_fd); // can it work?
         int status;
         for (int i = 0; i < fork_num; i++) waitpid(pid_list[i], &status, WNOHANG);
     }
