@@ -19,7 +19,7 @@ typedef struct {
 } server;
 
 typedef struct {
-    int conn_fd;  
+    int connect_fd;  
     char buf[2048];  
     size_t buf_len;  
 	int item;
@@ -47,6 +47,19 @@ server initServer(unsigned short port) {
     return svr;
 }
 
+std::string strip(char *buf) {
+    char* p1 = strstr(buf, "\015\012");
+    if (p1 == NULL) p1 = strstr(buf, "\012");
+    if (p1 == NULL){
+        perror("Read miss ending...");
+        exit(1);
+    }
+    buf[p1 - buf] = '\0';
+    std::string result;
+    result.append(buf, p1 - buf);
+    return result;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         perror("Usage: ./server <port_num>");
@@ -59,16 +72,16 @@ int main(int argc, char **argv) {
     }
     server svr = initServer(run_port);
 
-    int conn_fd;
-    int pid_list[4096], fork_num = 0;
+    int connect_fd;
+    pid_t pid_list[4096], fork_num = 0;
 
     struct sockaddr_in cliaddr;
     unsigned long len = sizeof(cliaddr);
     while (1) {
-        conn_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);
-        fprintf(stderr, "new connection %d\n", conn_fd);
-        while (conn_fd < 0) {
-            if (errno == EINTR || errno == EAGAIN) conn_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);  // try again
+        connect_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);
+        fprintf(stderr, "new connection %d\n", connect_fd);
+        while (connect_fd < 0) {
+            if (errno == EINTR || errno == EAGAIN) connect_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);  // try again
             if (errno == ENFILE) {
                 (void) fprintf(stderr, "out of file descriptor table ...\n");
                 continue;
@@ -76,14 +89,14 @@ int main(int argc, char **argv) {
             perror("accept");
         }
         if ((pid_list[fork_num++] = fork()) == 0) {
-            // dup2(conn_fd, STDOUT_FILENO);
-            // dup2(conn_fd, STDIN_FILENO);
-            char request[4096];
-            read(conn_fd, request, 4096);
-            write(conn_fd, request, 4096);
+            char buffer[4096];
+            read(connect_fd, buffer, 4096);
+
+            std::string request = strip(buffer);
+
             exit(0);
         }
-        close(conn_fd); // can it work?
+        close(connect_fd); // can it work?
         int status;
         for (int i = 0; i < fork_num; i++) waitpid(pid_list[i], &status, WNOHANG);
     }
