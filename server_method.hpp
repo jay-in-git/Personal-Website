@@ -47,10 +47,10 @@ namespace handler {
                 response += header;                
                 response += body;
             }
-            else if(!!request["Path"].compare("/mo.jpg")) {
+            else if(!request["Path"].compare("/mo.jpg")) {
                 int fd = open("./mo.jpg", O_RDONLY);
-                char body[4096];
-                read(fd, body, 4096);
+                char body[8192];
+                read(fd, body, 8192);
 
                 char header[256];
                 sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "image/jpeg");
