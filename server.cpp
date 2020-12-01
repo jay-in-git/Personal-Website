@@ -3,17 +3,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <stdbool.h>
-#include <assert.h>
-#include "server_method.hpp"
 #include <string>
 #include <iostream>
+#include "server_method.hpp"
 
 typedef struct {
     unsigned short port;
@@ -26,7 +26,14 @@ typedef struct {
     size_t buf_len;  
 	int item;
 } request;
-
+// char base_html[] = 
+// "HTTP/1.1 200 OK\r\n"
+// "<!DOCTYPE HTML>"
+// "<html><head><title>waffle's childhood</title>"
+// "<style>body { background-color: #000000 }</style></head>\r\n"
+// "<body><center><h1>I love ning!</h1><br>\r\n"
+// "</center></body></html>\r\n"
+// ;
 server initServer(unsigned short port) {
     server svr;
     struct sockaddr_in servaddr;
@@ -77,23 +84,13 @@ int main(int argc, char **argv) {
         }
         if ((pid_list[fork_num++] = fork()) == 0) {
             char buffer[4096];
-            recv(connect_fd, buffer, 4096, MSG_WAITALL);
-            // char *pos = NULL, *prev = buffer;
+            read(connect_fd, buffer, 4096);
+            puts(buffer);
+            char *pos = NULL, *prev = buffer;
             std::string tmp = "";
-            // while(( pos = strstr(buffer, "\r\n")) != NULL) {
-            //     tmp.append(prev, pos - prev);
-            //     tmp.append("\r\n", )
-            //     puts(buffer);
-            //     puts("+++++++++++++++++++++++++");
-            // }
-            // // exit(0);
-            // // puts(buffer);
-            tmp.append(buffer);
-            //std::cout << tmp;
+            for (int i = 0; i < strlen(buffer); i++) tmp += buffer[i];
             std::map<std::string, std::string> request = handler::dataToMap(buffer);
-            for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
-                std::cout << it->first << "   -->  " << it->second << "\n";
-            }
+            std::map<std::string, std::string> response = handler::getResponse(request);
         }
         close(connect_fd); // can it work?
         int status;

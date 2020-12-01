@@ -6,7 +6,7 @@
 namespace handler {
     std::map<std::string, std::string> dataToMap(std::string data){
         std::map <std::string, std::string> request;
-        std::string space = " ", space_colon = ": ", newline = "\r\n";
+        std::string space = " ", colon_space = ": ", newline = "\r\n";
         size_t pos = 0;
         
         // reauest line
@@ -18,18 +18,23 @@ namespace handler {
         data.erase(0, data.find(newline) + newline.length());
         
         // header lines
-        while ((pos = data.find(space_colon)) != std::string::npos) {
+        while ((pos = data.find(newline)) != std::string::npos) {
             //puts("IN");
-            std::string feature = "", content = "";
-            feature = data.substr(0, pos);
-            data.erase(0, pos + space_colon.length());
-            if ((pos = data.find(newline) != std::string::npos)) {
-                content = data.substr(0, pos);
-                data.erase(0, pos + newline.length());
-            }
+            std::string feature = "", content = "", line = data.substr(0, pos);
+            std::cout << line << '\n';
+
+            size_t middle = line.find(colon_space);
+            feature = line.substr(0, middle);
+            line.erase(0, middle + colon_space.length());
+            content = line;
+
+            data.erase(0, pos + newline.length());
             request.insert(std::pair<std::string, std::string> (feature, content));
         }
         return request;
+    }
+    std::map<std::string, std::string> getResponse(std::map<std::string, std::string> request) {
+        
     }
 }
 /*
