@@ -33,8 +33,36 @@ namespace handler {
         request.insert(std::pair<std::string, std::string> ((std::string) "Body", data));
         return request;
     }
-    std::map<std::string, std::string> getResponse(std::map<std::string, std::string> request) {
+    std::string getResponse(std::map<std::string, std::string> request) {
+        std::string response = "HTTP/1.1 200 OK\r\nAccept-Ranges: bytes\r\n";
+        if (!request["Method"].compare("GET")) {
+            if (!request["Path"].compare("/")) {
+                int fd = open("./base.html", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
 
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+
+                response += header;                
+                response += body;
+            }
+            else if(!!request["Path"].compare("/mo.jpg")) {
+                int fd = open("./mo.jpg", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
+
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "image/jpeg");
+
+                response += header;
+                response += body;
+            }
+            else {
+                response = "HTTP/1.1 404 NOT FOUND\r\n";
+            }
+        }
+        return response;
     }
 }
 /*

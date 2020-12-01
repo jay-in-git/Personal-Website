@@ -89,11 +89,15 @@ int main(int argc, char **argv) {
             char *pos = NULL, *prev = buffer;
             std::string tmp = "";
             tmp += buffer;
+            std::cout << tmp << "\n*********\n";
             std::map<std::string, std::string> request = handler::dataToMap(tmp);
 // for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
 //     std::cout << it->first << "   -->  " << it->second << "\n";
-// }
-            std::map<std::string, std::string> response = handler::getResponse(request);
+// }        
+            std::string response = handler::getResponse(request);
+            std::cout << response << '\n';
+            write(connect_fd, response.c_str(), response.length());
+            close(connect_fd);
             exit(0);
         }
         close(connect_fd); // can it work?

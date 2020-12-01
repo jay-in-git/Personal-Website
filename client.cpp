@@ -31,8 +31,10 @@ int main(int argc, char **argv) {
         printf("\nConnection Failed \n"); 
         return -1; 
     }
+    char get[4096];
     char packet[4096] = "POST /cgi-bin/process.cgi HTTP/1.1\r\nUser-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\nHost: www.tutorialspoint.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: length\r\nAccept-Language: en-us\r\nAccept-Encoding: gzip, deflate\r\nConnection: Keep-Alive\r\n";
     send(skt , packet, strlen(packet) , 0); 
+    recv(skt, get, 4096, 0);
     printf("Packet sent\n"); 
     return 0; 
 }
