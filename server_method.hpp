@@ -47,16 +47,41 @@ namespace handler {
                 response += header;                
                 response += body;
             }
-            else if(!!request["Path"].compare("/mo.jpg")) {
-                int fd = open("./mo.jpg", O_RDONLY);
-                char body[4096];
-                read(fd, body, 4096);
+            else if(!request["Path"].compare("/mo.jpg")) {
+                std::vector<char> buffer;   
+                FILE* file_stream = fopen("/Users/waffle/Documents/CNproject/mo.jpg", "rb");
 
-                char header[256];
-                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "image/jpeg");
+                size_t file_size;
 
-                response += header;
-                response += body;
+                if(file_stream != nullptr)
+                {
+                    fseek(file_stream, 0, SEEK_END);
+                    long file_length = ftell(file_stream);
+                    rewind(file_stream);
+                    buffer.resize(file_length);
+                    file_size = fread(&buffer[0], 1, file_length, file_stream);
+                }
+                else
+                {
+                    printf("file_stream is null! file name -> %s\n", "./mo.jpg");
+                }
+                printf("%lu\n", file_size);
+                std::string html = "HTTP/1.1 200 Okay\r\nContent-Type: text/html; charset=ISO-8859-4 \r\n\r\n" + std::string("FILE NOT FOUND!!");
+
+                if( file_size > 0)
+                {
+                    // HTTP/1.0 200 OK
+                    // Server: cchttpd/0.1.0
+                    // Content-Type: image/gif
+                    // Content-Transfer-Encoding: binary
+                    // Content-Length: 41758
+
+                    std::string file_size_str = std::to_string(file_size);
+                    std::string file_str(buffer.begin(),buffer.end());
+                    html = "HTTP/1.1 200 Okay\r\nContent-Type: image/png; Content-Transfer-Encoding: binary; Content-Length: " + file_size_str + ";charset=ISO-8859-4 \r\n\r\n" + file_str;
+                }
+
+                return html;
             }
             else {
                 response = "HTTP/1.1 404 NOT FOUND\r\n";
