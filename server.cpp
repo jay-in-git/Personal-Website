@@ -88,13 +88,6 @@ int main(int argc, char **argv) {
             // // exit(0);
             // // puts(buffer);
             tmp.append(buffer);
-            size_t pos = 0;
-
-            while ((pos = tmp.find("\r\n")) != std::string::npos) {
-                tmp[pos] = '!';
-                std::cout << tmp.substr(0, pos) << '\n';
-            }
-            exit(0);
             //std::cout << tmp;
             std::map<std::string, std::string> request = handler::dataToMap(buffer);
             for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
