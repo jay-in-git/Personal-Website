@@ -46,19 +46,6 @@ server initServer(unsigned short port) {
     return svr;
 }
 
-std::string strip(char *buf) {
-    char* p1 = strstr(buf, "\015\012");
-    if (p1 == NULL) p1 = strstr(buf, "\012");
-    if (p1 == NULL){
-        perror("Reading miss ending...");
-        exit(1);
-    }
-    buf[p1 - buf] = '\0';
-    std::string result;
-    result.append(buf, 0, p1 - buf);
-    return result;
-}
-
 int main(int argc, char **argv) {
     if (argc < 2) {
         perror("Usage: ./server <port_num>");
@@ -89,13 +76,30 @@ int main(int argc, char **argv) {
         }
         if ((pid_list[fork_num++] = fork()) == 0) {
             char buffer[4096];
-            read(connect_fd, buffer, 4096);
-            std::map<std::string, std::string> request = handler::dataToMap(strip(buffer));
-            puts("FUCK");
-            for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
-                std::cout << it->first << " " << it->second << "\n";
+            recv(connect_fd, buffer, 4096, MSG_WAITALL);
+            // char *pos = NULL, *prev = buffer;
+            std::string tmp = "";
+            // while(( pos = strstr(buffer, "\r\n")) != NULL) {
+            //     tmp.append(prev, pos - prev);
+            //     tmp.append("\r\n", )
+            //     puts(buffer);
+            //     puts("+++++++++++++++++++++++++");
+            // }
+            // // exit(0);
+            // // puts(buffer);
+            tmp.append(buffer);
+            size_t pos = 0;
+
+            while ((pos = tmp.find("\r\n")) != std::string::npos) {
+                tmp[pos] = '!';
+                std::cout << tmp.substr(0, pos) << '\n';
             }
             exit(0);
+            //std::cout << tmp;
+            std::map<std::string, std::string> request = handler::dataToMap(buffer);
+            for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
+                std::cout << it->first << "   -->  " << it->second << "\n";
+            }
         }
         close(connect_fd); // can it work?
         int status;
