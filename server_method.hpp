@@ -10,18 +10,17 @@ namespace handler {
         size_t pos = 0;
         
         // reauest line
-        request.insert(std::pair<std::string, std::string> ((std::string) "method", data.substr(0, data.find(space))));
+        request.insert(std::pair<std::string, std::string> ((std::string) "Method", data.substr(0, data.find(space))));
         data.erase(0, data.find(space) + space.length());
-        request.insert(std::pair<std::string, std::string> ((std::string) "path", data.substr(0, data.find(space))));
+        request.insert(std::pair<std::string, std::string> ((std::string) "Path", data.substr(0, data.find(space))));
         data.erase(0, data.find(space) + space.length());
-        request.insert(std::pair<std::string, std::string> ((std::string) "version", data.substr(0, data.find(newline))));
+        request.insert(std::pair<std::string, std::string> ((std::string) "Version", data.substr(0, data.find(newline))));
         data.erase(0, data.find(newline) + newline.length());
         
         // header lines
         while ((pos = data.find(newline)) != std::string::npos) {
             //puts("IN");
             std::string feature = "", content = "", line = data.substr(0, pos);
-            std::cout << line << '\n';
 
             size_t middle = line.find(colon_space);
             feature = line.substr(0, middle);
@@ -31,10 +30,11 @@ namespace handler {
             data.erase(0, pos + newline.length());
             request.insert(std::pair<std::string, std::string> (feature, content));
         }
+        request.insert(std::pair<std::string, std::string> ((std::string) "Body", data));
         return request;
     }
     std::map<std::string, std::string> getResponse(std::map<std::string, std::string> request) {
-        
+
     }
 }
 /*

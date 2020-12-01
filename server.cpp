@@ -85,12 +85,16 @@ int main(int argc, char **argv) {
         if ((pid_list[fork_num++] = fork()) == 0) {
             char buffer[4096];
             read(connect_fd, buffer, 4096);
-            puts(buffer);
+// puts(buffer);
             char *pos = NULL, *prev = buffer;
             std::string tmp = "";
-            for (int i = 0; i < strlen(buffer); i++) tmp += buffer[i];
-            std::map<std::string, std::string> request = handler::dataToMap(buffer);
+            tmp += buffer;
+            std::map<std::string, std::string> request = handler::dataToMap(tmp);
+// for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
+//     std::cout << it->first << "   -->  " << it->second << "\n";
+// }
             std::map<std::string, std::string> response = handler::getResponse(request);
+            exit(0);
         }
         close(connect_fd); // can it work?
         int status;
