@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <stdbool.h>
 #include <assert.h>
+#include "server_method.hpp"
 #include <string>
 #include <iostream>
 
@@ -24,8 +25,6 @@ typedef struct {
     size_t buf_len;  
 	int item;
 } request;
-
-int handleRequest();
 
 server initServer(unsigned short port) {
     server svr;
@@ -51,12 +50,12 @@ std::string strip(char *buf) {
     char* p1 = strstr(buf, "\015\012");
     if (p1 == NULL) p1 = strstr(buf, "\012");
     if (p1 == NULL){
-        perror("Read miss ending...");
+        perror("Reading miss ending...");
         exit(1);
     }
     buf[p1 - buf] = '\0';
     std::string result;
-    result.append(buf, p1 - buf);
+    result.append(buf, 0, p1 - buf);
     return result;
 }
 
@@ -91,9 +90,11 @@ int main(int argc, char **argv) {
         if ((pid_list[fork_num++] = fork()) == 0) {
             char buffer[4096];
             read(connect_fd, buffer, 4096);
-
-            std::string request = strip(buffer);
-
+            std::map<std::string, std::string> request = handler::dataToMap(strip(buffer));
+            puts("FUCK");
+            for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
+                std::cout << it->first << " " << it->second << "\n";
+            }
             exit(0);
         }
         close(connect_fd); // can it work?
