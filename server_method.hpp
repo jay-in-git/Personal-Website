@@ -49,7 +49,7 @@ namespace handler {
             }
             else if(!request["Path"].compare("/mo.jpg")) {
                 std::vector<char> buffer;   
-                FILE* file_stream = fopen("/Users/waffle/Documents/CNproject/mo.jpg", "rb");
+                FILE* file_stream = fopen("./mo.jpg", "rb");
 
                 size_t file_size;
 
@@ -66,7 +66,7 @@ namespace handler {
                     printf("file_stream is null! file name -> %s\n", "./mo.jpg");
                 }
                 printf("%lu\n", file_size);
-                std::string html = "HTTP/1.1 200 Okay\r\nContent-Type: text/html; charset=ISO-8859-4 \r\n\r\n" + std::string("FILE NOT FOUND!!");
+                std::string response = "HTTP/1.1 404 Not Found\r\n";
 
                 if( file_size > 0)
                 {
@@ -78,13 +78,20 @@ namespace handler {
 
                     std::string file_size_str = std::to_string(file_size);
                     std::string file_str(buffer.begin(),buffer.end());
-                    html = "HTTP/1.1 200 Okay\r\nContent-Type: image/png; Content-Transfer-Encoding: binary; Content-Length: " + file_size_str + ";charset=ISO-8859-4 \r\n\r\n" + file_str;
+                    response = "HTTP/1.1 200 Ok\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "\r\ncharset=ISO-8859-4 \r\n\r\n" + file_str;
                 }
-
-                return html;
             }
             else {
-                response = "HTTP/1.1 404 NOT FOUND\r\n";
+                response = "HTTP/1.1 404 Not Found\r\n\r\n";
+                // int fd = open("./404.html", O_RDONLY);
+                // char body[4096];
+                // read(fd, body, 4096);
+
+                // char header[256];
+                // sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+
+                // response += header;                
+                // response += body;
             }
         }
         return response;
