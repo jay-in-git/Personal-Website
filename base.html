@@ -1,28 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>waffle</title>
+	<title>MO paradise</title>
 </head>
 <body>
 	<div id="cloud">
 		<h1 id="M">
-			Is this mo?
+            Is this mo?
 		</h1>
+        <form>
+            <label for="account">Account:</label><br>
+            <input type="text" id="account" name="account"><br>
+            <label for="passwd">Password:</label><br>
+            <input type="text" id="passwd" name="passwd"><br>
+            <input type="submit" value="login"><br>
+        </form>
+        <form>
+            <input type="submit" value="register"><br>
+        </form>
 	</div>
 
 	<style type="text/css">
 
 		div#cloud {
-			width: 60%;
-			height: 30%;
+			width: 20%;
+			height: 20%;
 
 			position: absolute;
 			top: 0;
 			bottom: 20%;
-			left: 0;
+			left: 1;
 			right: 0;
 			
-			margin: auto;
 		}
 		
 		body {
@@ -33,19 +42,6 @@
 			background-attachment: fixed;
 			background-size: cover;
 		}
-
-		form {
-		    display: inline-block;
-		    vertical-align: middle;
-		}
-
-		form#jay input{
-		    height: 50px;
-		    width: 40px;
-		    text-align: center;
-		    font-size: 2em;
-		    border: 1px solid #000;
-		} 
 	</style>
 </body>
 </html>
