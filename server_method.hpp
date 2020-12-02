@@ -64,9 +64,10 @@ namespace handler {
                 else
                 {
                     printf("file_stream is null! file name -> %s\n", "./mo.jpg");
+                    exit(1);
                 }
                 printf("%lu\n", file_size);
-                std::string response = "HTTP/1.1 404 Not Found\r\n";
+                response = "HTTP/1.1 404 Not Found\r\n\r\n";
 
                 if( file_size > 0)
                 {
@@ -78,20 +79,20 @@ namespace handler {
 
                     std::string file_size_str = std::to_string(file_size);
                     std::string file_str(buffer.begin(),buffer.end());
-                    response = "HTTP/1.1 200 Ok\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "\r\ncharset=ISO-8859-4 \r\n\r\n" + file_str;
+                    response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
                 }
             }
             else {
-                response = "HTTP/1.1 404 Not Found\r\n\r\n";
-                // int fd = open("./404.html", O_RDONLY);
-                // char body[4096];
-                // read(fd, body, 4096);
+                response = "HTTP/1.1 404 Not Found\r\n";
+                int fd = open("./404.html", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
 
-                // char header[256];
-                // sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8m");
 
-                // response += header;                
-                // response += body;
+                response += header;                
+                response += body;
             }
         }
         return response;
