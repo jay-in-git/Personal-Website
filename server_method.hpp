@@ -83,7 +83,16 @@ namespace handler {
                 }
             }
             else {
-                response = "HTTP/1.1 404 NOT FOUND\r\n";
+                response = "HTTP/1.1 404 Not Found\r\n";
+                int fd = open("./404.html", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
+
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+
+                response += header;                
+                response += body;
             }
         }
         return response;
