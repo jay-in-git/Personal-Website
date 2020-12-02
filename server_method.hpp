@@ -89,7 +89,7 @@ namespace handler {
                 read(fd, body, 4096);
 
                 char header[256];
-                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8m");
 
                 response += header;                
                 response += body;
