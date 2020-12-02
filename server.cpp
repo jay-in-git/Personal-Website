@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 //     std::cout << it->first << "   -->  " << it->second << "\n";
 // }        
             std::string response = handler::getResponse(request);
-            std::cout << response << '\n';
+            // std::cout << response << '\n';
             write(connect_fd, response.c_str(), response.length());
             close(connect_fd);
             exit(0);
