@@ -82,6 +82,76 @@ namespace handler {
                     response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
                 }
             }
+            else if(!request["Path"].compare("/jay.jpg")) {
+                std::vector<char> buffer;   
+                FILE* file_stream = fopen("./jay.jpg", "rb");
+
+                size_t file_size;
+
+                if(file_stream != nullptr)
+                {
+                    fseek(file_stream, 0, SEEK_END);
+                    long file_length = ftell(file_stream);
+                    rewind(file_stream);
+                    buffer.resize(file_length);
+                    file_size = fread(&buffer[0], 1, file_length, file_stream);
+                }
+                else
+                {
+                    printf("file_stream is null! file name -> %s\n", "./mo.jpg");
+                    exit(1);
+                }
+                printf("%lu\n", file_size);
+                response = "HTTP/1.1 404 Not Found\r\n\r\n";
+
+                if( file_size > 0)
+                {
+                    // HTTP/1.0 200 OK
+                    // Server: cchttpd/0.1.0
+                    // Content-Type: image/gif
+                    // Content-Transfer-Encoding: binary
+                    // Content-Length: 41758
+
+                    std::string file_size_str = std::to_string(file_size);
+                    std::string file_str(buffer.begin(),buffer.end());
+                    response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
+                }
+            }
+            else if(!request["Path"].compare("/waffle.jpg")) {
+                std::vector<char> buffer;   
+                FILE* file_stream = fopen("./waffle.jpg", "rb");
+
+                size_t file_size;
+
+                if(file_stream != nullptr)
+                {
+                    fseek(file_stream, 0, SEEK_END);
+                    long file_length = ftell(file_stream);
+                    rewind(file_stream);
+                    buffer.resize(file_length);
+                    file_size = fread(&buffer[0], 1, file_length, file_stream);
+                }
+                else
+                {
+                    printf("file_stream is null! file name -> %s\n", "./mo.jpg");
+                    exit(1);
+                }
+                printf("%lu\n", file_size);
+                response = "HTTP/1.1 404 Not Found\r\n\r\n";
+
+                if( file_size > 0)
+                {
+                    // HTTP/1.0 200 OK
+                    // Server: cchttpd/0.1.0
+                    // Content-Type: image/gif
+                    // Content-Transfer-Encoding: binary
+                    // Content-Length: 41758
+
+                    std::string file_size_str = std::to_string(file_size);
+                    std::string file_str(buffer.begin(),buffer.end());
+                    response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
+                }
+            }
             else {
                 response = "HTTP/1.1 404 Not Found\r\n";
                 int fd = open("./404.html", O_RDONLY);
