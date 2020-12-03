@@ -1,51 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>waffle</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  max-width: 300px;
+  margin: auto;
+  text-align: center;
+  font-family: arial;
+}
+
+.title {
+  color: grey;
+  font-size: 18px;
+}
+
+button {
+  border: none;
+  outline: 0;
+  display: inline-block;
+  padding: 8px;
+  color: white;
+  background-color: #000;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  font-size: 18px;
+}
+
+a {
+  text-decoration: none;
+  font-size: 22px;
+  color: black;
+}
+
+button:hover, a:hover {
+  opacity: 0.7;
+}
+</style>
 </head>
 <body>
-	<div id="cloud">
-		<h1 id="M">
-			Is this mo?
-		</h1>
-	</div>
 
-	<style type="text/css">
+<h2 style="text-align:center">User Profile Card</h2>
 
-		div#cloud {
-			width: 60%;
-			height: 30%;
+<div >
+	<div class="card" style="float: left;">
+		<img src="./mo.jpg" alt="John" style="width:100%">
+		<h1>Jay</h1>
+		<p class="title">B07902021</p>
+		<p>Ning</p>
+		<div style="margin: 24px 0;"> 
+		  <a href="https://www.facebook.com/profile.php?id=100000264101218"><i class="fa fa-facebook"></i></a> 
+		</div>
+		<p><button></p>
+	  </div>
+	  <div class="card" style="float: right;">
+		  <img src="./mo.jpg" alt="John" style="width:100%">
+		  <h1>許耀文</h1>
+		  <p class="title">B07902011</p>
+		  <p>Ning</p>
+		  <div style="margin: 24px 0;"> 
+			<a href="https://www.facebook.com/profile.php?id=100000264101218"><i class="fa fa-facebook"></i></a> 
+		  </div>
+		  <p><button></p>
+		</div>
+	  </body>
+</div>
 
-			position: absolute;
-			top: 0;
-			bottom: 20%;
-			left: 0;
-			right: 0;
-			
-			margin: auto;
-		}
-		
-		body {
-		    text-align: center;
-			color: white;
-			background-image: url("./mo.jpg");
-			background-repeat: no-repeat;
-			background-attachment: fixed;
-			background-size: cover;
-		}
-
-		form {
-		    display: inline-block;
-		    vertical-align: middle;
-		}
-
-		form#jay input{
-		    height: 50px;
-		    width: 40px;
-		    text-align: center;
-		    font-size: 2em;
-		    border: 1px solid #000;
-		} 
-	</style>
-</body>
 </html>
