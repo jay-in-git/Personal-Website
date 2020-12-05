@@ -32,9 +32,13 @@ int main(int argc, char **argv) {
         return -1; 
     }
     char get[4096];
-    char packet[4096] = "POST /cgi-bin/process.cgi HTTP/1.1\r\nUser-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\nHost: www.tutorialspoint.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: length\r\nAccept-Language: en-us\r\nAccept-Encoding: gzip, deflate\r\nConnection: Keep-Alive\r\n";
+    puts("Sending...");
+    char packet[4096] = "GET / HTTP/1.1";
+    puts(packet);
     send(skt , packet, strlen(packet) , 0); 
     recv(skt, get, 4096, 0);
+    puts("Got...");
+    puts(get);
     printf("Packet sent\n"); 
     return 0; 
 }
