@@ -118,9 +118,9 @@ namespace handler {
                 response += header;                
                 response += body;
             }
-            else if(!request["Path"].compare("/mo.jpg")) {
+            else if(!request["Path"].compare("/Mo.jpg")) {
                 vector<char> buffer;   
-                FILE* file_stream = fopen("./mo.jpg", "rb");
+                FILE* file_stream = fopen("./Mo.jpg", "rb");
 
                 size_t file_size;
 
