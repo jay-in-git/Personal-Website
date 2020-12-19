@@ -2,25 +2,28 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <fstream>
+
+using namespace std;
 
 namespace handler {
-    std::map<std::string, std::string> dataToMap(std::string data){
-        std::map <std::string, std::string> request;
-        std::string space = " ", colon_space = ": ", newline = "\r\n";
+    map<string, string> dataToMap(string data){
+        map <string, string> request;
+        string space = " ", colon_space = ": ", newline = "\r\n";
         size_t pos = 0;
         
         // reauest line
-        request.insert(std::pair<std::string, std::string> ((std::string) "Method", data.substr(0, data.find(space))));
+        request.insert(pair<string, string> ((string) "Method", data.substr(0, data.find(space))));
         data.erase(0, data.find(space) + space.length());
-        request.insert(std::pair<std::string, std::string> ((std::string) "Path", data.substr(0, data.find(space))));
+        request.insert(pair<string, string> ((string) "Path", data.substr(0, data.find(space))));
         data.erase(0, data.find(space) + space.length());
-        request.insert(std::pair<std::string, std::string> ((std::string) "Version", data.substr(0, data.find(newline))));
+        request.insert(pair<string, string> ((string) "Version", data.substr(0, data.find(newline))));
         data.erase(0, data.find(newline) + newline.length());
         
         // header lines
-        while ((pos = data.find(newline)) != std::string::npos) {
+        while ((pos = data.find(newline)) != string::npos) {
             //puts("IN");
-            std::string feature = "", content = "", line = data.substr(0, pos);
+            string feature = "", content = "", line = data.substr(0, pos);
 
             size_t middle = line.find(colon_space);
             feature = line.substr(0, middle);
@@ -28,15 +31,83 @@ namespace handler {
             content = line;
 
             data.erase(0, pos + newline.length());
-            request.insert(std::pair<std::string, std::string> (feature, content));
+            request.insert(pair<string, string> (feature, content));
         }
-        request.insert(std::pair<std::string, std::string> ((std::string) "Body", data));
+        request.insert(pair<string, string> ((string) "Body", data));
         return request;
     }
-    std::string getResponse(std::map<std::string, std::string> request) {
-        std::string response = "HTTP/1.1 200 OK\r\nAccept-Ranges: bytes\r\n";
+    string getPass(string account){
+        string user, pass;
+        ifstream filein("account.txt");
+        while(!filein.eof()){
+            filein >> user;
+            filein >> pass;
+            if(user == account){
+                return pass;
+            }
+        }
+        filein.close();
+        return "";
+    }
+    void Register(string user, string pass){
+        ofstream out;
+        out.open("account.txt", ofstream::app);
+        out << user << endl;
+        out << pass << endl;
+        out.flush();
+        out.close();
+        return;
+    }
+    int checkCookie(string cookie){
+        while(cookie.find(";") != string::npos){
+            string tmp = cookie.substr(0, cookie.find(";"));
+            string name = tmp.substr(0, tmp.find("="));
+            string value = tmp.substr(tmp.find("=") + 1);
+            if(name.substr(0,1) == " "){
+                name.erase(0, 1);
+            }
+            if(name == "ning"){
+                if(value == "chichi"){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+            cookie.erase(0, cookie.find(";") + 1);
+        }
+        if(cookie.find("=") != string::npos){
+            string tmp = cookie.substr(0, cookie.find(";"));
+            string name = tmp.substr(0, tmp.find("="));
+            string value = tmp.substr(tmp.find("=") + 1);
+            if(name.substr(0,1) == " "){
+                name.erase(0, 1);
+            }
+            if(name == "ning"){
+                if(value == "chichi"){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+    string getResponse(map<string, string> request) {
+        string response = "HTTP/1.1 200 OK\r\nAccept-Ranges: bytes\r\n";
         if (!request["Method"].compare("GET")) {
-            if (!request["Path"].compare("/")) {
+            if(!request["Path"].compare("/")){
+                if(checkCookie(request["Cookie"])){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /profile\r\n";
+                }else{
+                    response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
+                }
+            }
+            else if (!request["Path"].compare("/profile")) {
+                if(!checkCookie(request["Cookie"])){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
+                }
                 int fd = open("./base.html", O_RDONLY);
                 char body[4096];
                 read(fd, body, 4096);
@@ -48,7 +119,7 @@ namespace handler {
                 response += body;
             }
             else if(!request["Path"].compare("/mo.jpg")) {
-                std::vector<char> buffer;   
+                vector<char> buffer;   
                 FILE* file_stream = fopen("./mo.jpg", "rb");
 
                 size_t file_size;
@@ -71,19 +142,14 @@ namespace handler {
 
                 if( file_size > 0)
                 {
-                    // HTTP/1.0 200 OK
-                    // Server: cchttpd/0.1.0
-                    // Content-Type: image/gif
-                    // Content-Transfer-Encoding: binary
-                    // Content-Length: 41758
 
-                    std::string file_size_str = std::to_string(file_size);
-                    std::string file_str(buffer.begin(),buffer.end());
+                    string file_size_str = to_string(file_size);
+                    string file_str(buffer.begin(),buffer.end());
                     response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
                 }
             }
             else if(!request["Path"].compare("/jay.jpg")) {
-                std::vector<char> buffer;   
+                vector<char> buffer;   
                 FILE* file_stream = fopen("./jay.jpg", "rb");
 
                 size_t file_size;
@@ -106,19 +172,14 @@ namespace handler {
 
                 if( file_size > 0)
                 {
-                    // HTTP/1.0 200 OK
-                    // Server: cchttpd/0.1.0
-                    // Content-Type: image/gif
-                    // Content-Transfer-Encoding: binary
-                    // Content-Length: 41758
 
-                    std::string file_size_str = std::to_string(file_size);
-                    std::string file_str(buffer.begin(),buffer.end());
+                    string file_size_str = to_string(file_size);
+                    string file_str(buffer.begin(),buffer.end());
                     response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
                 }
             }
             else if(!request["Path"].compare("/waffle.jpg")) {
-                std::vector<char> buffer;   
+                vector<char> buffer;   
                 FILE* file_stream = fopen("./waffle.jpg", "rb");
 
                 size_t file_size;
@@ -141,16 +202,52 @@ namespace handler {
 
                 if( file_size > 0)
                 {
-                    // HTTP/1.0 200 OK
-                    // Server: cchttpd/0.1.0
-                    // Content-Type: image/gif
-                    // Content-Transfer-Encoding: binary
-                    // Content-Length: 41758
 
-                    std::string file_size_str = std::to_string(file_size);
-                    std::string file_str(buffer.begin(),buffer.end());
+                    string file_size_str = to_string(file_size);
+                    string file_str(buffer.begin(),buffer.end());
                     response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
                 }
+            }
+            else if(!request["Path"].compare("/login")){
+                int fd = open("./login.html", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
+
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+
+                response += header;                
+                response += body;
+            }
+            else if(!request["Path"].compare("/logout")){
+                response = "HTTP/1.1 302 Found\r\nLocation: /login\r\nSet-Cookie: ning=ning";
+            }
+            else if (!request["Path"].compare("/board")) {
+                if(!checkCookie(request["Cookie"])){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
+                }
+                ifstream file("./message_board.html");
+                ifstream message("./message.txt");
+                int tagline = 72, count = 0;
+                char buffer[1000];
+                char message_buffer[1000];
+                string body = "";
+                while(!file.eof()){
+                    file.getline(buffer, 1000);
+                    if(count == tagline){
+                        while(!message.eof()){
+                            message.getline(message_buffer, 1000);
+                            body += message_buffer;
+                        }
+                    }
+                    body += buffer;
+                    count ++;
+                }
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", body.length(), "text/html; charset=UTF-8");
+
+                response += header;                
+                response += body;
             }
             else {
                 response = "HTTP/1.1 404 Not Found\r\n";
@@ -164,6 +261,73 @@ namespace handler {
                 response += header;                
                 response += body;
             }
+        }
+        else if(!request["Method"].compare("POST")){
+            if(!request["Path"].compare("/login")){
+                string info = request["Body"];
+                string userName = info.substr(0, info.find("&"));
+                info.erase(0, info.find("&") + 1);
+                string pass = info;
+                userName = userName.substr(userName.find("=") + 1);
+                pass = pass.substr(pass.find("=") + 1);
+                if(getPass(userName) ==  pass){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /\r\nSet-Cookie: ning=chichi";
+                }
+                else{
+                    response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
+                }
+            }
+            else if(!request["Path"].compare("/register")){
+                string info = request["Body"];
+                string userName = info.substr(0, info.find("&"));
+                info.erase(0, info.find("&") + 1);
+                string pass = info;
+                userName = userName.substr(userName.find("=") + 1);
+                pass = pass.substr(pass.find("=") + 1);
+                if(getPass(userName) != ""){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
+                }
+                else{
+                    Register(userName, pass);
+                    response = "HTTP/1.1 302 Found\r\nLocation: /\r\nSet-Cookie: ning=chichi";
+                }
+            }
+            else if (!request["Path"].compare("/message")) {
+                string info = request["Body"];
+                string message = info.substr(info.find("=") + 1);
+                ofstream out;
+                cout << message << endl;
+                out.open("message.txt", ofstream::app);
+                out << "<p>" << message << "</p>" << endl;
+                out.flush();
+                out.close();
+                response = "HTTP/1.1 302 Found\r\nLocation: /board\r\n";
+            }
+            else {
+                response = "HTTP/1.1 404 Not Found\r\n";
+                int fd = open("./404.html", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
+
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8m");
+
+                response += header;                
+                response += body;
+            }
+
+        }
+        else{
+            response = "HTTP/1.1 404 Not Found\r\n";
+                int fd = open("./404.html", O_RDONLY);
+                char body[4096];
+                read(fd, body, 4096);
+
+                char header[256];
+                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8m");
+
+                response += header;                
+                response += body;
         }
         return response;
     }
