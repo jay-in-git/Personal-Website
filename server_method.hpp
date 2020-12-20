@@ -108,15 +108,17 @@ namespace handler {
                 if(!checkCookie(request["Cookie"])){
                     response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
                 }
-                int fd = open("./base.html", O_RDONLY);
-                char body[4096];
-                read(fd, body, 4096);
+                else{
+                    int fd = open("./base.html", O_RDONLY);
+                    char body[4096];
+                    read(fd, body, 4096);
 
-                char header[256];
-                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+                    char header[256];
+                    sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
 
-                response += header;                
-                response += body;
+                    response += header;                
+                    response += body;
+                }
             }
             else if(!request["Path"].compare("/Mo.jpg")) {
                 vector<char> buffer;   
@@ -209,15 +211,21 @@ namespace handler {
                 }
             }
             else if(!request["Path"].compare("/login")){
-                int fd = open("./login.html", O_RDONLY);
-                char body[4096];
-                read(fd, body, 4096);
+                if(checkCookie(request["Cookie"])){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /profile\r\n";
+                }
+                else
+                {
+                    int fd = open("./login.html", O_RDONLY);
+                    char body[4096];
+                    read(fd, body, 4096);
 
-                char header[256];
-                sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+                    char header[256];
+                    sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
 
-                response += header;                
-                response += body;
+                    response += header;                
+                    response += body;
+                }
             }
             else if(!request["Path"].compare("/logout")){
                 response = "HTTP/1.1 302 Found\r\nLocation: /login\r\nSet-Cookie: ning=ning";
@@ -226,7 +234,8 @@ namespace handler {
                 if(!checkCookie(request["Cookie"])){
                     response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
                 }
-                ifstream file("./message_board.html");
+                else{
+                    ifstream file("./message_board.html");
                 ifstream message("./message.txt");
                 int tagline = 72, count = 0;
                 char buffer[1000];
@@ -248,6 +257,7 @@ namespace handler {
 
                 response += header;                
                 response += body;
+                }                
             }
             else {
                 response = "HTTP/1.1 404 Not Found\r\n";
