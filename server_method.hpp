@@ -97,6 +97,32 @@ namespace handler {
         }
         return 0;
     }
+    string getUserName(string cookie){
+        while(cookie.find(";") != string::npos){
+            string tmp = cookie.substr(0, cookie.find(";"));
+            string name = tmp.substr(0, tmp.find("="));
+            string value = tmp.substr(tmp.find("=") + 1);
+            if(name.substr(0,1) == " "){
+                name.erase(0, 1);
+            }
+            if(name == "user"){
+                return value;
+            }
+            cookie.erase(0, cookie.find(";") + 1);
+        }
+        if(cookie.find("=") != string::npos){
+            string tmp = cookie.substr(0, cookie.find(";"));
+            string name = tmp.substr(0, tmp.find("="));
+            string value = tmp.substr(tmp.find("=") + 1);
+            if(name.substr(0,1) == " "){
+                name.erase(0, 1);
+            }
+            if(name == "user"){
+                return value;
+            }
+        }
+        return "";
+    }
     string getResponse(map<string, string> request) {
         string response = "HTTP/1.1 200 OK\r\nAccept-Ranges: bytes\r\n";
         if (!request["Method"].compare("GET")) {
@@ -231,7 +257,7 @@ namespace handler {
                 }
             }
             else if(!request["Path"].compare("/logout")){
-                response = "HTTP/1.1 302 Found\r\nLocation: /login\r\nSet-Cookie: ning=ning";
+                response = "HTTP/1.1 302 Found\r\nLocation: /login\r\nSet-Cookie: ning=ning\r\n";
             }
             else if (!request["Path"].compare("/board")) {
                 if(!checkCookie(request["Cookie"])){
@@ -284,7 +310,7 @@ namespace handler {
                 userName = userName.substr(userName.find("=") + 1);
                 pass = pass.substr(pass.find("=") + 1);
                 if(getPass(userName) ==  pass){
-                    response = "HTTP/1.1 302 Found\r\nLocation: /\r\nSet-Cookie: ning=chichi";
+                    response = "HTTP/1.1 302 Found\r\nLocation: /\r\nSet-Cookie: ning=chichi\r\nSet-Cookie: user=" + userName + "\r\n";
                 }
                 else{
                     response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
@@ -302,7 +328,7 @@ namespace handler {
                 }
                 else{
                     Register(userName, pass);
-                    response = "HTTP/1.1 302 Found\r\nLocation: /\r\nSet-Cookie: ning=chichi";
+                    response = "HTTP/1.1 302 Found\r\nLocation: /\r\nSet-Cookie: ning=chichi\r\nSet-Cookie: user="  + userName + "\r\n";
                 }
             }
             else if (!request["Path"].compare("/message")) {
@@ -310,7 +336,7 @@ namespace handler {
                 string message = info.substr(info.find("=") + 1);
                 size_t pid;
                 if ((pid = fork()) == 0) {
-                    execlp("python", "python", "processMessage.py", message.c_str() , NULL);
+                    execlp("python", "python", "processMessage.py", getUserName(request["Cookie"]).c_str(), message.c_str() , NULL);
                     exit(0);
                 }
                 waitpid(pid, NULL, 0);
