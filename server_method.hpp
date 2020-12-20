@@ -3,6 +3,9 @@
 #include <map>
 #include <vector>
 #include <fstream>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -295,12 +298,18 @@ namespace handler {
             else if (!request["Path"].compare("/message")) {
                 string info = request["Body"];
                 string message = info.substr(info.find("=") + 1);
-                ofstream out;
-                cout << message << endl;
-                out.open("message.txt", ofstream::app);
-                out << "<p>" << message << "</p>" << endl;
-                out.flush();
-                out.close();
+                size_t pid;
+                if ((pid = fork()) == 0) {
+                    execlp("python", "python", "processMessage.py", message.c_str(), ">>", "message.txt", NULL);
+                    exit(0);
+                }
+                waitpid(pid, NULL, 0);
+                //ofstream out;
+                //cout << message << endl;
+                //out.open("message.txt", ofstream::app);
+                //out << "<p>" << message << "</p>" << endl;
+                //out.flush();
+                //out.close();
                 response = "HTTP/1.1 302 Found\r\nLocation: /board\r\n";
             }
             else {
