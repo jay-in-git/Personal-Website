@@ -310,7 +310,7 @@ namespace handler {
                 string message = info.substr(info.find("=") + 1);
                 size_t pid;
                 if ((pid = fork()) == 0) {
-                    execlp("python", "python", "processMessage.py", message.c_str(), ">>", "message.txt", NULL);
+                    execlp("python", "python", "processMessage.py", message.c_str() , NULL);
                     exit(0);
                 }
                 waitpid(pid, NULL, 0);
