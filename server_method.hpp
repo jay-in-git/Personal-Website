@@ -149,6 +149,22 @@ namespace handler {
                     response += body;
                 }
             }
+            else if (!request["Path"].compare("/video")) {
+                if(!checkCookie(request["Cookie"])){
+                    response = "HTTP/1.1 302 Found\r\nLocation: /login\r\n";
+                }
+                else{
+                    int fd = open("./video.html", O_RDONLY);
+                    char body[4096];
+                    read(fd, body, 4096);
+
+                    char header[256];
+                    sprintf(header, "Content-Length: %lu\r\nContent-Type: %s\r\n\r\n", strlen(body), "text/html; charset=UTF-8");
+
+                    response += header;                
+                    response += body;
+                }
+            }
             else if(!request["Path"].compare("/Mo.jpg")) {
                 vector<char> buffer;   
                 FILE* file_stream = fopen("./Mo.jpg", "rb");
@@ -237,6 +253,44 @@ namespace handler {
                     string file_size_str = to_string(file_size);
                     string file_str(buffer.begin(),buffer.end());
                     response = "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\nContent-Length: " + file_size_str + "; charset=ISO-8859-4\r\n\r\n" + file_str;
+                }
+            }
+            else if(!request["Path"].compare("/test.mp4")) {
+                vector<char> buffer;   
+                FILE* file_stream = fopen("./chap0.mp4", "rb");
+
+                size_t file_size;
+                string range = request["Range"];
+                range = range.substr(range.find("=") + 1, range.find("-"));
+                int start = stoi(range);
+                fseek(file_stream, 0, SEEK_END);
+                int total_size = 69225782;
+                if(file_stream != nullptr)
+                {
+                    fseek(file_stream, start, SEEK_SET);
+                    int file_length = total_size - start;
+                    if(file_length > 20000){
+                        file_length = 20000;
+                    }
+                    buffer.resize(file_length);
+                    file_size = fread(&buffer[0], 1, file_length, file_stream);
+                }
+                else
+                {
+                    printf("file_stream is null! file name -> %s\n", "./mo.jpg");
+                    exit(1);
+                }
+                printf("%lu\n", file_size);
+                response = "HTTP/1.1 404 Not Found\r\n\r\n";
+
+                if( file_size > 0)
+                {
+
+                    string file_size_str = to_string(file_size);
+                    string start_str = to_string(start);
+                    string end_str = to_string(start + file_size - 1);
+                    string file_str(buffer.begin(),buffer.end());
+                    response = "HTTP/1.1 206 Partial Content\r\nContent-Length: " + file_size_str + "\r\nAccept-Ranges: bytes\r\nConnection: keep-alive\r\nContent-Range: bytes "+ start_str + "-"+ end_str +"/69225782\r\nContent-Type: video/mp4\r\n\r\n" + file_str;
                 }
             }
             else if(!request["Path"].compare("/login")){
@@ -336,7 +390,7 @@ namespace handler {
                 string message = info.substr(info.find("=") + 1);
                 size_t pid;
                 if ((pid = fork()) == 0) {
-                    execlp("python", "python", "processMessage.py", getUserName(request["Cookie"]).c_str(), message.c_str() , NULL);
+                    execlp("python3", "python3", "processMessage.py", getUserName(request["Cookie"]).c_str(), message.c_str() , NULL);
                     exit(0);
                 }
                 waitpid(pid, NULL, 0);
