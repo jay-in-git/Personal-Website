@@ -264,7 +264,7 @@ namespace handler {
                 range = range.substr(range.find("=") + 1, range.find("-"));
                 int start = stoi(range);
                 fseek(file_stream, 0, SEEK_END);
-                int total_size = 69225782;
+                int total_size = ftell(file_stream);
                 if(file_stream != nullptr)
                 {
                     fseek(file_stream, start, SEEK_SET);
@@ -283,14 +283,23 @@ namespace handler {
                 printf("%lu\n", file_size);
                 response = "HTTP/1.1 404 Not Found\r\n\r\n";
 
-                if( file_size > 0)
+                if( file_size == 20000)
                 {
 
                     string file_size_str = to_string(file_size);
                     string start_str = to_string(start);
                     string end_str = to_string(start + file_size - 1);
                     string file_str(buffer.begin(),buffer.end());
-                    response = "HTTP/1.1 206 Partial Content\r\nContent-Length: " + file_size_str + "\r\nAccept-Ranges: bytes\r\nConnection: keep-alive\r\nContent-Range: bytes "+ start_str + "-"+ end_str +"/69225782\r\nContent-Type: video/mp4\r\n\r\n" + file_str;
+                    string total_size_str = to_string(total_size);
+                    response = "HTTP/1.1 206 Partial Content\r\nContent-Length: " + file_size_str + "\r\nAccept-Ranges: bytes\r\nConnection: keep-alive\r\nContent-Range: bytes "+ start_str + "-"+ end_str +"/" + total_size_str + "\r\nContent-Type: video/mp4\r\n\r\n" + file_str;
+                }
+                else if(file_size > 0){
+                    string file_size_str = to_string(file_size);
+                    string start_str = to_string(start);
+                    string end_str = to_string(start + file_size - 1);
+                    string file_str(buffer.begin(),buffer.end());
+                    string total_size_str = to_string(total_size);
+                    response = "HTTP/1.1 200 OK\r\nContent-Length: " + file_size_str + "\r\nAccept-Ranges: bytes\r\nConnection: keep-alive\r\nContent-Range: bytes "+ start_str + "-"+ end_str +"/" + total_size_str + "\r\nContent-Type: video/mp4\r\n\r\n" + file_str;
                 }
             }
             else if(!request["Path"].compare("/login")){
