@@ -13,6 +13,7 @@
 #include <netdb.h>
 #include <string>
 #include <iostream>
+#include <signal.h>
 #include "server_method.hpp"
 
 typedef struct {
@@ -74,6 +75,12 @@ int main(int argc, char **argv) {
     while (1) {
         connect_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);
         fprintf(stderr, "new connection %d\n", connect_fd);
+        int status;
+        printf("====================%d\n", fork_num);
+        for (int i = 0; i < fork_num; i++){
+            waitpid(pid_list[i], &status, WNOHANG);
+            printf("%d\n", pid_list[i]);
+        }
         while (connect_fd < 0) {
             if (errno == EINTR || errno == EAGAIN) connect_fd = accept(svr.listen_fd, (struct sockaddr*)&cliaddr, (socklen_t*)&len);  // try again
             if (errno == ENFILE) {
@@ -83,25 +90,30 @@ int main(int argc, char **argv) {
             perror("accept");
         }
         if ((pid_list[fork_num++] = fork()) == 0) {
-            char buffer[4096];
-            read(connect_fd, buffer, 4096);
-// puts(buffer);
-            char *pos = NULL, *prev = buffer;
-            std::string tmp = "";
-            tmp += buffer;
-            std::cout << tmp << "\n*********\n";
-            std::map<std::string, std::string> request = handler::dataToMap(tmp);
-// for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
-//     std::cout << it->first << "   -->  " << it->second << "\n";
-// }        
-            std::string response = handler::getResponse(request);
-            // std::cout << response << '\n';
-            write(connect_fd, response.c_str(), response.length());
+            int count = 1;
+            while (1) {
+                alarm(1);
+                char buffer[4096];
+                read(connect_fd, buffer, 4096);
+                alarm(0);
+                // puts(buffer);
+                char *pos = NULL, *prev = buffer;
+                std::string tmp = "";
+                tmp += buffer;
+                std::cout << "------------->REQ:\n"<< tmp << "\n*********\n";
+                std::map<std::string, std::string> request = handler::dataToMap(tmp);
+                // for(std::map<std::string, std::string>::iterator it = request.begin(); it != request.end(); ++it) {
+                //     std::cout << it->first << "   -->  " << it->second << "\n";
+                // }        
+                std::string response = handler::getResponse(request);
+                std::cout <<"-------------> RES:\n";
+                puts(response.c_str());
+                write(connect_fd, response.c_str(), response.length());
+
+            }
             close(connect_fd);
             exit(0);
         }
         close(connect_fd); // can it work?
-        int status;
-        for (int i = 0; i < fork_num; i++) waitpid(pid_list[i], &status, WNOHANG);
     }
 }
